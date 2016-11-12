@@ -9,7 +9,11 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import time
 from matplotlib import rcParams
+from decimal import *
 rcParams.update({'figure.autolayout': True})
+
+np.set_printoptions(precision=4)
+np.set_printoptions(suppress=True), 
 
 #set r and sigma as suggested
 r=0.02
@@ -24,7 +28,7 @@ M=100
 k=T/M
 # create zero matrix nxn
 #Size of matrix
-n=5
+n=1000
 #initial matrix for data colection during iterations
 outputDataSparse= numpy.zeros(shape=(T,n))
 #Initialise A Matrix
@@ -127,41 +131,43 @@ def sparse_sor(A,b,maxits,e,w):
 for i in range(0,n):
        if (i==0):
            #b[i]=50+((k/2)*((sigma*sigma)-r)*X)
-           coefficientsSparse[i]=max(X-(i*k),0)
+           coefficientsSparse[i]=max(X-(i*k*0.01),0)
            coefficientsSparse[i]=coefficientsSparse[i]+((k/2)*((sigma*sigma)-r)*X)
        else:
            #b[i]=b[i-1]+2
-           coefficientsSparse[i]=max(X-(i*k),0)
+           coefficientsSparse[i]=max(X-(i*k*0.01),0)
 start=coefficientsSparse
 #print(start)
 
 #first build initial version of the regression coefficients 
 #perform lin regression for the range of time samples and use these for next ieration    
 t1 = time.time()
-for p in range(0,T,1):
+for p in range(0,1,1):
     outputDataSparse[p,0:n]=coefficientsSparse.T
     #loop for M-1 to 0
-    for i in range(0, n):
-          # loop for BSM coefficient creation
-          for j in range(0, n):
-              #all other matrix solutions except top right and bottom left
-              if (i==j) and (j!=0) and (j!=n-1):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
-                  A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
-                  
-              #top left unique set up
-              if (i==0) and (j==0):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
-                  
-              #bottom right unique set up    
-              if (i==n-1) and (j==n-1):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
+    if (p==0):
+        for i in range(0, n):
+              # loop for BSM coefficient creation
+              for j in range(0, n):
+                  #all other matrix solutions except top right and bottom left
+                  if (i==j) and (j!=0) and (j!=n-1):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
+                      A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
+                      
+                  #top left unique set up
+                  if (i==0) and (j==0):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
+                      
+                  #bottom right unique set up    
+                  if (i==n-1) and (j==n-1):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
                   
     # run the sparse sor
-    csr = csr_store(A,diagZero,diagDom)
+    if (p==0):
+        csr = csr_store(A,diagZero,diagDom)
     #time the solve
     t1 = time.time()
     coefficientsSparse=sparse_sor(csr,coefficientsSparse,5,0.1,1.25)
@@ -202,3 +208,21 @@ ax.set_ylabel('Days to expire')
 ax.set_xlabel('Options')
 ax.set_zlabel('Stock Price BSM value using SOR')
 plt.show()
+
+
+
+x0=np.matrix.round(A, 4) 
+x1=np.around(coefficientsSparse.T, 4) 
+import numpy as np
+newA = numpy.vstack([x0, x1])
+nonEmatrix=[]
+#nonEmatrix=np.asarray(nonEmatrix)
+#for p in range(0,len(newA),1):
+x2=np.around(newA[0,0:len(newA)-1],4)
+x3=np.around(newA[1,0:len(newA)-1],4)
+nonEmatrix = numpy.vstack([x2, x3])
+    
+for p in range(2,len(newA),1):
+    x4=np.around(newA[p,0:len(newA)-1],4)
+    nonEmatrix = numpy.vstack([nonEmatrix, x4])
+np.savetxt('test.txt', nonEmatrix,fmt='%1.6f')  

@@ -24,7 +24,7 @@ M=100
 k=T/M
 # create zero matrix nxn
 #Size of matrix
-n=50
+n=500
 #initial matrix for data colection during iterations
 outputDataSparse= numpy.zeros(shape=(T,n))
 #Initialise A Matrix
@@ -126,27 +126,30 @@ t1 = time.time()
 for p in range(0,T,1):
     outputDataSparse[p,0:n]=coefficientsSparse.T
     #loop for M-1 to 0
-    for i in range(0, n):
-          # loop for BSM coefficient creation
-          for j in range(0, n):
-              #all other matrix solutions except top right and bottom left
-              if (i==j) and (j!=0) and (j!=n-1):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
-                  A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
-                  
-              #top left unique set up
-              if (i==0) and (j==0):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
-                  
-              #bottom right unique set up    
-              if (i==n-1) and (j==n-1):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
+    # run the sparse sor
+    if (p==0):
+        for i in range(0, n):
+              # loop for BSM coefficient creation
+              for j in range(0, n):
+                  #all other matrix solutions except top right and bottom left
+                  if (i==j) and (j!=0) and (j!=n-1):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
+                      A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
+                      
+                  #top left unique set up
+                  if (i==0) and (j==0):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
+                      
+                  #bottom right unique set up    
+                  if (i==n-1) and (j==n-1):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
                   
     # run the sparse sor
-    csr = csr_store(A)
+    if (p==0):
+        csr = csr_store(A)
     #time the solve
     t1 = time.time()
     coefficientsSparse=sparse_sor(csr,coefficientsSparse,5,0.1,1.25)

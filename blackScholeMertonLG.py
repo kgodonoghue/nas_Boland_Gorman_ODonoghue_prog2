@@ -37,13 +37,13 @@ M=100
 k=T/M
 # create zero matrix nxn
 #Size of matrix
-n=50
+n=500
 #initial matrix for data colection during iterations
 outputData= numpy.zeros(shape=(T,n))
 #Initialise A Matrix
 A= numpy.zeros(shape=(n,n))
 #create zero b matrix nx1
-coefficientsSparse=numpy.zeros(shape=(n,1))
+b=numpy.zeros(shape=(n,1))
 
 #first build the b part of the solution
 #code is the same as fnM=max{S-nk}
@@ -66,25 +66,26 @@ start=b
 for p in range(0,T,1):
     outputData[p,0:n]=b.T
     #loop for M-1 to 0
-    for i in range(0, n):
-          # loop for BSM coefficient creation
-          for j in range(0, n):
-              #all other matrix solutions except top right and bottom left
-              if (i==j) and (j!=0) and (j!=n-1):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
-                  A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
-                  
-              #top left unique set up
-              if (i==0) and (j==0):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
-                  
-              #bottom right unique set up    
-              if (i==n-1) and (j==n-1):
-                  A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
-                  A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
-                  
+    if (p==0):
+        for i in range(0, n):
+              # loop for BSM coefficient creation
+              for j in range(0, n):
+                  #all other matrix solutions except top right and bottom left
+                  if (i==j) and (j!=0) and (j!=n-1):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
+                      A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
+                      
+                  #top left unique set up
+                  if (i==0) and (j==0):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i+1,j]=((-(i+2)*k)/2)*(((i+2)*sigma*sigma)-r)
+                      
+                  #bottom right unique set up    
+                  if (i==n-1) and (j==n-1):
+                      A[i,j]=(1+(k*r)+(k*(sigma*sigma)*((i+1)*(i+1))))
+                      A[i-1,j]=((-i*k)/2)*(((i)*sigma*sigma)+r)
+                      
     #use linear regression until SOR is completed
     #print(A)
     #print(b)
