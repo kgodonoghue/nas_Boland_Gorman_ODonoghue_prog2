@@ -59,7 +59,7 @@ def csr_store(B,diagZero,diagDom):
             if (i==j) and B[i,j] == 0:
                 diagZero=0
             #diagonally dominant check  
-            if (i==j) and (B[i,j]-(sum(B[i,0:len(B)])-B[i,j])<=0):
+            if (i==j) and (B[i,j]-(sum(B[i,0:len(B)])-B[i,j])<=0) and (B[i,j]-(sum(B[0:len(B),j])-B[i,j])<=0):
                 diagDom=0
             
             # Ignore zero entries
